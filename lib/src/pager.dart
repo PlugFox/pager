@@ -12,6 +12,8 @@ import 'pager_transitions_builder.dart';
 typedef PagerWidgetBuilder<S extends Object> = Widget Function(BuildContext context, S state);
 typedef PagerBuilderCondition<S extends Object> = bool Function(BuildContext context, S previous, S current);
 
+/// [buildWhen] - позволяет сравнить предидущий и текущий состояние, если метод возвращает `false`, то
+/// перестроение экрана вызвано не будет. Текущий стейт приравнивается к
 class Pager<S extends Object> extends StatefulWidget {
   final S initialData;
   final Stream<S> stream;
@@ -22,10 +24,11 @@ class Pager<S extends Object> extends StatefulWidget {
     @required this.initialData,
     @required this.stream,
     @required this.builder,
-    this.buildWhen,
+    PagerBuilderCondition<S> buildWhen,
     this.transitionsBuilder,
     Key key,
-  }) : super(key: key);
+  })  : buildWhen = buildWhen ?? _defaultPagerBuilderCondition,
+        super(key: key);
 
   /// Перейти на указаную страницу
   static void showPage(BuildContext context, Widget page) {
@@ -33,6 +36,8 @@ class Pager<S extends Object> extends StatefulWidget {
     assert(state is _PagerState, 'Pager не найден в контексте');
     state?.showPage(page);
   }
+
+  static bool _defaultPagerBuilderCondition<S extends Object>(BuildContext context, S prev, S next) => true;
 
   @override
   State<Pager<S>> createState() => _PagerState<S>();
@@ -49,7 +54,8 @@ class _PagerState<S extends Object> extends State<Pager<S>> {
   @override
   void initState() {
     super.initState();
-    final initialPage = widget.builder(context, widget.initialData);
+    _prevState = widget.initialData;
+    final initialPage = widget.builder(context, _prevState);
     final initialEntry = OverlayEntry(builder: (context) => initialPage);
     _screens.add(initialEntry);
     _streamSubscription = widget.stream.listen(_buildAndShowScreen);
