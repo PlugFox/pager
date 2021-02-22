@@ -53,18 +53,14 @@ class _PagerState<S extends Object> extends State<Pager<S>> {
     final initialEntry = OverlayEntry(builder: (context) => initialPage);
     _screens.add(initialEntry);
     _streamSubscription = widget.stream.listen(_buildAndShowScreen);
-    assert(() {
-      debug('Pager подписался на поток');
-    }());
+    debug('Pager подписался на поток');
   }
 
   @override
   void didUpdateWidget(Pager<S> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(widget.stream, oldWidget.stream)) {
-      assert(() {
-        debug('Pager переподписался на поток');
-      }());
+      debug('Pager подписался на поток');
       _streamSubscription?.cancel();
       _streamSubscription = widget.stream.listen(_buildAndShowScreen);
     }
@@ -73,9 +69,7 @@ class _PagerState<S extends Object> extends State<Pager<S>> {
   @override
   void dispose() {
     _streamSubscription?.cancel();
-    assert(() {
-      debug('Pager отписался от потока');
-    }());
+    debug('Pager подписался на поток');
     super.dispose();
   }
   //endregion
@@ -100,27 +94,23 @@ class _PagerState<S extends Object> extends State<Pager<S>> {
     assert(overlayState is OverlayState, 'Не найден OverlayState');
     if (page is! Widget || overlayState is! OverlayState) return;
     final animatedPage = _AnimatedPagerPage(
-      child: page,
       transitionsBuilder: widget.transitionsBuilder ?? const PagerFadeUpwardsTransitionsBuilder(),
-      popCallback: () => pop(),
+      popCallback: pop,
+      child: page,
     );
     final entry = OverlayEntry(
       builder: (context) => animatedPage,
     );
     _screens.add(entry);
     overlayState?.insert(entry);
-    assert(() {
-      debug('Показана новая страница, осталось: ${_screens.length}');
-    }());
+    debug('Pager подписался на поток');
   }
 
   void pop() {
     assert(_screens.length > 1, 'Произведена попытка убрать из ScreenStreamBuilder единственный экран');
     if (_screens.length < 2) return;
     _screens.removeFirst().remove();
-    assert(() {
-      debug('Убрана предидущая страница, осталось: ${_screens.length}');
-    }());
+    debug('Pager подписался на поток');
   }
 }
 
