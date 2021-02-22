@@ -16,14 +16,14 @@ class Pager<S extends Object> extends StatefulWidget {
   final S initialData;
   final Stream<S> stream;
   final PagerWidgetBuilder<S> builder;
+  final PagerBuilderCondition<S> buildWhen;
   final PagerTransitionsBuilder transitionsBuilder;
-  final PagerBuilderCondition buildWhen;
   const Pager({
     @required this.initialData,
     @required this.stream,
     @required this.builder,
-    this.transitionsBuilder,
     this.buildWhen,
+    this.transitionsBuilder,
     Key key,
   }) : super(key: key);
 
