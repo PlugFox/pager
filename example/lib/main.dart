@@ -7,9 +7,9 @@ void main() => runApp(App());
 
 class App extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => const MaterialApp(
         title: 'Pager',
-        home: const PagerExample(),
+        home: PagerExample(),
       );
 }
 
@@ -19,7 +19,8 @@ class PagerExample extends StatefulWidget {
     Key key,
   }) : super(key: key);
 
-  static _PagerExampleState of(BuildContext context) => context.findAncestorStateOfType<_PagerExampleState>();
+  static _PagerExampleState of(BuildContext context) =>
+      context.findAncestorStateOfType<_PagerExampleState>();
 
   @override
   State<PagerExample> createState() => _PagerExampleState();
@@ -76,13 +77,13 @@ class Page1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text('Page #1'),
+          title: const Text('Page #1'),
         ),
         body: SafeArea(
           child: Center(
             child: OutlinedButton(
-              child: Text('Go to Page #2'),
               onPressed: () => PagerExample.of(context).goToPage2(),
+              child: const Text('Go to Page #2'),
             ),
           ),
         ),
@@ -98,13 +99,13 @@ class Page2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text('Page #2'),
+          title: const Text('Page #2'),
         ),
         body: SafeArea(
           child: Center(
             child: OutlinedButton(
-              child: Text('Go to Page #3'),
               onPressed: () => PagerExample.of(context).goToPage3(),
+              child: const Text('Go to Page #3'),
             ),
           ),
         ),
@@ -120,13 +121,13 @@ class Page3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text('Page #3'),
+          title: const Text('Page #3'),
         ),
         body: SafeArea(
           child: Center(
             child: OutlinedButton(
-              child: Text('Go to Page #4'),
               onPressed: () => Pager.showPage(context, const Page4()),
+              child: const Text('Go to Page #4'),
             ),
           ),
         ),
@@ -142,13 +143,13 @@ class Page4 extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text('Page #4'),
+          title: const Text('Page #4'),
         ),
         body: SafeArea(
           child: Center(
             child: OutlinedButton(
-              child: Text('Go to Page #1'),
               onPressed: () => Pager.showPage(context, const Page1()),
+              child: const Text('Go to Page #1'),
             ),
           ),
         ),

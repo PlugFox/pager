@@ -9,8 +9,10 @@ import 'debug.dart';
 import 'pager_fade_upwards_transitions_builder.dart';
 import 'pager_transitions_builder.dart';
 
-typedef PagerWidgetBuilder<S extends Object> = Widget Function(BuildContext context, S state);
-typedef PagerBuilderCondition<S extends Object> = bool Function(BuildContext context, S previous, S current);
+typedef PagerWidgetBuilder<S extends Object> = Widget Function(
+    BuildContext context, S state);
+typedef PagerBuilderCondition<S extends Object> = bool Function(
+    BuildContext context, S previous, S current);
 
 /// [buildWhen] - позволяет сравнить предидущий и текущий состояние, если метод возвращает `false`, то
 /// перестроение экрана вызвано не будет. Текущий стейт приравнивается к
@@ -21,12 +23,12 @@ class Pager<S extends Object> extends StatefulWidget {
   final PagerBuilderCondition<S> buildWhen;
   final PagerTransitionsBuilder transitionsBuilder;
   const Pager({
-    @required this.initialData,
-    @required this.stream,
-    @required this.builder,
-    PagerBuilderCondition<S> buildWhen,
-    this.transitionsBuilder,
-    Key key,
+    required this.initialData,
+    required this.stream,
+    required this.builder,
+    PagerBuilderCondition<S>? buildWhen,
+    this.transitionsBuilder = const PagerFadeUpwardsTransitionsBuilder(),
+    Key? key,
   })  : buildWhen = buildWhen ?? _defaultPagerBuilderCondition,
         super(key: key);
 
@@ -37,7 +39,9 @@ class Pager<S extends Object> extends StatefulWidget {
     state?.showPage(page);
   }
 
-  static bool _defaultPagerBuilderCondition<S extends Object>(BuildContext context, S prev, S next) => true;
+  static bool _defaultPagerBuilderCondition<S extends Object>(
+          BuildContext context, S prev, S next) =>
+      true;
 
   @override
   State<Pager<S>> createState() => _PagerState<S>();
@@ -45,10 +49,10 @@ class Pager<S extends Object> extends StatefulWidget {
 
 class _PagerState<S extends Object> extends State<Pager<S>> {
   /// Предидущие данные с которыми построена страница
-  S _prevState;
+  late S _prevState;
+  late StreamSubscription<S> _streamSubscription;
   final GlobalKey<OverlayState> _overlayKey = GlobalKey<OverlayState>();
   final Queue<OverlayEntry> _screens = Queue<OverlayEntry>();
-  StreamSubscription<S> _streamSubscription;
 
   //region Lifecycle
   @override
@@ -67,14 +71,14 @@ class _PagerState<S extends Object> extends State<Pager<S>> {
     super.didUpdateWidget(oldWidget);
     if (!identical(widget.stream, oldWidget.stream)) {
       debug('Pager подписался на поток');
-      _streamSubscription?.cancel();
+      _streamSubscription.cancel();
       _streamSubscription = widget.stream.listen(_buildAndShowScreen);
     }
   }
 
   @override
   void dispose() {
-    _streamSubscription?.cancel();
+    _streamSubscription.cancel();
     debug('Pager подписался на поток');
     super.dispose();
   }
@@ -88,7 +92,7 @@ class _PagerState<S extends Object> extends State<Pager<S>> {
 
   /// Построить новый экран исходя из подписки на стрим
   void _buildAndShowScreen(S state) {
-    if (widget.buildWhen?.call(context, _prevState, state) ?? true) {
+    if (widget.buildWhen.call(context, _prevState, state)) {
       _prevState = state;
       showPage(widget.builder(context, state));
     }
@@ -100,7 +104,7 @@ class _PagerState<S extends Object> extends State<Pager<S>> {
     assert(overlayState is OverlayState, 'Не найден OverlayState');
     if (page is! Widget || overlayState is! OverlayState) return;
     final animatedPage = _AnimatedPagerPage(
-      transitionsBuilder: widget.transitionsBuilder ?? const PagerFadeUpwardsTransitionsBuilder(),
+      transitionsBuilder: widget.transitionsBuilder,
       popCallback: pop,
       child: page,
     );
@@ -108,12 +112,13 @@ class _PagerState<S extends Object> extends State<Pager<S>> {
       builder: (context) => animatedPage,
     );
     _screens.add(entry);
-    overlayState?.insert(entry);
+    overlayState.insert(entry);
     debug('Pager подписался на поток');
   }
 
   void pop() {
-    assert(_screens.length > 1, 'Произведена попытка убрать из ScreenStreamBuilder единственный экран');
+    assert(_screens.length > 1,
+        'Произведена попытка убрать из ScreenStreamBuilder единственный экран');
     if (_screens.length < 2) return;
     _screens.removeFirst().remove();
     debug('Pager подписался на поток');
@@ -129,18 +134,19 @@ class _AnimatedPagerPage extends StatefulWidget {
   /// и надо убрать предидущий.
   final VoidCallback popCallback;
   const _AnimatedPagerPage({
-    @required this.child,
-    @required this.transitionsBuilder,
-    @required this.popCallback,
-    Key key,
+    required this.child,
+    required this.transitionsBuilder,
+    required this.popCallback,
+    Key? key,
   }) : super(key: key);
 
   @override
   State<_AnimatedPagerPage> createState() => _AnimatedPagerPageState();
 }
 
-class _AnimatedPagerPageState extends State<_AnimatedPagerPage> with SingleTickerProviderStateMixin<_AnimatedPagerPage> {
-  AnimationController _controller;
+class _AnimatedPagerPageState extends State<_AnimatedPagerPage>
+    with SingleTickerProviderStateMixin<_AnimatedPagerPage> {
+  late AnimationController _controller;
 
   @override
   void initState() {
@@ -166,7 +172,8 @@ class _AnimatedPagerPageState extends State<_AnimatedPagerPage> with SingleTicke
   }
 
   @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) => super.debugFillProperties(
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) =>
+      super.debugFillProperties(
         properties
           ..add(
             StringProperty(
